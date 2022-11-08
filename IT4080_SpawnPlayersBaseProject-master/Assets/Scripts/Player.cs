@@ -8,12 +8,14 @@ public class Player : NetworkBehaviour {
     public NetworkVariable<Vector3> PositionChange = new NetworkVariable<Vector3>();
     public NetworkVariable<Vector3> RotationChange = new NetworkVariable<Vector3>();
     public NetworkVariable<Color> PlayerColor = new NetworkVariable<Color>(Color.red);
+    public NetworkVariable<int> score = new NetworkVariable<int>(50);
 
     private GameManager _gameMgr;
     private Camera _camera;
     public float movementSpeed = .5f;
     private float rotationSpeed = 1f;
     private BulletSpawner _bulletSpawner;
+    public TMPro.TMP_Text txtScoreDisplay;
 
     private void Start() {
         ApplyPlayerColor();
@@ -24,6 +26,19 @@ public class Player : NetworkBehaviour {
     public override void OnNetworkSpawn() {
         _camera = transform.Find("Camera").GetComponent<Camera>();
         _camera.enabled = IsOwner;
+
+        txtScoreDisplay.text = score.Value.ToString();
+        score.OnValueChanged += ClientOnScoreChanged;
+    }
+
+    private void ClientOnScoreChanged(int previous, int current)
+    {
+        txtScoreDisplay.text = current.ToString();
+        if (score.Value == 0)
+        {
+            txtScoreDisplay.text = "DEAD";
+            Destroy(this.gameObject);
+        }
     }
 
 
@@ -33,6 +48,12 @@ public class Player : NetworkBehaviour {
 
         PositionChange.Value = posChange;
         RotationChange.Value = rotChange;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void RequestSetScoreServerRpc(int value)
+    {
+        score.Value = value;
     }
 
 
@@ -82,6 +103,24 @@ public class Player : NetworkBehaviour {
         if(!IsOwner || IsHost){
             transform.Translate(PositionChange.Value);
             transform.Rotate(RotationChange.Value);
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (IsHost)
+        {
+            if (collision.gameObject.CompareTag("bullet"))
+            {
+                RequestSetScoreServerRpc(score.Value - 1);
+
+                ulong ownerClientId = collision.gameObject.GetComponent<NetworkObject>().OwnerClientId;
+                Player otherPlayer = NetworkManager.Singleton.ConnectedClients[ownerClientId].PlayerObject.GetComponent<Player>();
+                otherPlayer.score.Value += 1;
+
+                Destroy(collision.gameObject);
+            }
+            
         }
     }
 }

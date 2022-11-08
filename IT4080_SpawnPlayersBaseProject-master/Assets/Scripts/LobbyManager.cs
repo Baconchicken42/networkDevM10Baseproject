@@ -54,6 +54,11 @@ public class LobbyManager : NetworkBehaviour
         EnableStartIfAllReady();
     }
 
+    public override void OnDestroy()
+    {
+        GameData.Instance.allPlayers.OnListChanged -= ClientOnAllPlayersChanged;
+    }
+
     // -----------------------
     // Private
     // -----------------------
