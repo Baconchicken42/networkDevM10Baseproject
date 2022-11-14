@@ -45,6 +45,11 @@ public class LobbyManager : NetworkBehaviour
                 GameData.Instance.allPlayers[myIndex] = info;
             }
         }
+        else
+        {
+            btnStart.gameObject.SetActive(false);
+            NetworkManager.Singleton.OnClientDisconnectCallback += ClientOnDisconnect;
+        }
 
         if (IsClient && !IsHost) {
             btnStart.gameObject.SetActive(false);
@@ -125,6 +130,11 @@ public class LobbyManager : NetworkBehaviour
 
     private void ClientOnReadyClicked() {
         ToggleReadyServerRpc();
+    }
+
+    private void ClientOnDisconnect(ulong clientId)
+    {
+        SceneManager.LoadScene("Main");
     }
 
 
