@@ -88,6 +88,11 @@ public class GameData : NetworkBehaviour {
         allPlayers.Add(new PlayerInfo(clientId, NextColor(), false));
     }
 
+    public void RemovePlayerFromList(ulong clientId)
+    {
+        allPlayers.RemoveAt(FindPlayerIndex(clientId));
+    }
+
 
     public int FindPlayerIndex(ulong clientId) {
         var idx = 0;

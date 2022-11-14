@@ -15,6 +15,7 @@ public class LobbyManager : NetworkBehaviour
     public Button btnStart;
     public Button btnReady;
     public LobbyPlayerPanel playerPanelPrefab;
+    public ChatUI chat;
 
     
     public void Awake() {
@@ -68,7 +69,15 @@ public class LobbyManager : NetworkBehaviour
         newPanel.SetName($"Player {info.clientId.ToString()}");
         newPanel.SetColor(info.color);
         newPanel.SetReady(info.isReady);
+        newPanel.OnKickPlayer += delegate { OnPlayerKicked(info.clientId); };
         playerPanels.Add(newPanel);
+    }
+
+    private void OnPlayerKicked(ulong clientId)
+    {
+        chat.SendChatMessageServerRpc($"Player {clientId} has been kicked");
+        NetworkManager.Singleton.DisconnectClient(clientId);
+        GameData.Instance.RemovePlayerFromList(clientId);
     }
 
     private void RefreshPlayerPanels() {
