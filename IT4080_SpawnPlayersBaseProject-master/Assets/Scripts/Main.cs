@@ -14,7 +14,6 @@ public class Main : NetworkBehaviour {
     public void Start() {
         btnHost.onClick.AddListener(OnHostClicked);
         btnClient.onClick.AddListener(OnClientClicked);
-        Application.targetFrameRate = 30;
     }
 
     private void StartHost() {
