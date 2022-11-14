@@ -48,6 +48,7 @@ public class LobbyManager : NetworkBehaviour
         else
         {
             btnStart.gameObject.SetActive(false);
+            Debug.LogWarning("Subbing to disconnect callback");
             NetworkManager.Singleton.OnClientDisconnectCallback += ClientOnDisconnect;
         }
 
@@ -63,6 +64,7 @@ public class LobbyManager : NetworkBehaviour
     public override void OnDestroy()
     {
         GameData.Instance.allPlayers.OnListChanged -= ClientOnAllPlayersChanged;
+        NetworkManager.Singleton.OnClientDisconnectCallback -= ClientOnDisconnect;
     }
 
     // -----------------------
@@ -80,8 +82,10 @@ public class LobbyManager : NetworkBehaviour
 
     private void OnPlayerKicked(ulong clientId)
     {
+        Debug.LogWarning("Onplayerkicked called");
         chat.SendChatMessageServerRpc($"Player {clientId} has been kicked");
-        NetworkManager.Singleton.DisconnectClient(clientId);
+        ReturnToMenuClientRpc(clientId);
+        //NetworkManager.Singleton.DisconnectClient(clientId);
         GameData.Instance.RemovePlayerFromList(clientId);
     }
 
@@ -134,6 +138,7 @@ public class LobbyManager : NetworkBehaviour
 
     private void ClientOnDisconnect(ulong clientId)
     {
+        Debug.LogWarning("Kicked");
         SceneManager.LoadScene("Main");
     }
 
@@ -157,6 +162,17 @@ public class LobbyManager : NetworkBehaviour
         GameData.Instance.allPlayers[playerIndex] = info;
 
         EnableStartIfAllReady();
+    }
+
+    [ClientRpc]
+    public void ReturnToMenuClientRpc(ulong clientId, ClientRpcParams clientRpcParams = default)
+    {
+        Debug.LogWarning("Received return to menu rpc");
+        if (clientId == NetworkManager.Singleton.LocalClientId)
+        {
+            NetworkManager.Singleton.Shutdown();
+            SceneManager.LoadScene("Main");
+        }
     }
 
 }

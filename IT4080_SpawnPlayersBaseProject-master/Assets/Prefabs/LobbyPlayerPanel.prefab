@@ -97,6 +97,7 @@ MonoBehaviour:
   txtName: {fileID: 378167119951620460}
   txtReady: {fileID: 4942098552061495866}
   pnlColor: {fileID: 489774141330825152}
+  btnKick: {fileID: 5306255371322353742}
 --- !u!114 &6418265707896612044
 MonoBehaviour:
   m_ObjectHideFlags: 0
